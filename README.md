@@ -1,0 +1,2 @@
+The business question (e.g., 'Telco wants to reduce revenue lost to churn'), the target metric (Churn = Yes/No), and a hypothesis list (contract type, tenure, monthly charges, support calls likely drive churn). Also decide your cost assumptions now: what does it cost to retain a customer (discount/offer) vs. losing one (lost lifetime revenue)? You'll need these numbers later for the business-impact step.
+

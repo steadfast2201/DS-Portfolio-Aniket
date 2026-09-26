@@ -1,0 +1,29 @@
+Proprioceptive sensing = knowing your model's internal parameters/state.
+
+Exteroceptive sensing = your input data/features from the outside world.
+The sensor might be a simple bump sensor on a robot vacuum cleaner to detect collision. It might be a GPS receiver that measures distances to an orbiting satellite constellation, or a
+compass that measures the direction of the Earth’s magnetic field vector relative to the robot. It might also be an active sensor that emits acoustic, optical or radio pulses in order to measure the distance to points in the world based on the time taken for a reflection to return to the sensor.
+
+Planning = policy/decision-making layer.
+
+Action = the executed output that changes the real world (unlike ML where output is usually just a prediction, here it's physical and has consequences — 
+this is a big mental shift coming from pure ML).
+
+Triangulation - 
+two viewpoints + known distance between them = triangulation = depth.
+
+Stereo Cameras - 
+    Close one eye, then the other, and notice how a nearby object (like your finger held close to your face) seems to "jump" more than something far away, like a wall. Your brain uses that jump (disparity) to build a 3D sense of depth. Stereo cameras on robots do the same thing computationally.
+
+    Why robots use it:
+        It's a passive sensor (doesn't need to emit anything like a laser), relatively cheap, and gives dense 3D information about the surroundings.
+        Useful for obstacle detection, terrain mapping, and navigation — critical for something like the Mars rover, which needs to understand the 3D terrain around it to avoid rocks/craters when planning where to drive.
+
+Mast = mainly about height (getting the sensor up high).
+
+Turret = mainly about rotation (getting the sensor to look in different directions).
+
+
+RELATIVE POSE = To desribe relative pose, we need to describe its two components: translation and rotation.
+
+COORDINATE FRAMES = 

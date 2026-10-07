@@ -1,0 +1,58 @@
+Filters:
+- Filters (also called as kernels) are small, learnable matrices that slide over the input to extract meaningful patters like edges, texture, and shapes.
+- It performs a convolution operation with the input image (or feature map).
+
+Padding:
+- Problem-1 : A image will loss information once it goes through a convolution operation. The more number of Convolution operations we perform the more information is lost.
+- Problem-2 : The center pixels are valued more than the side pixels in the Convolution operation.
+- Padding comes into play to solve this two problems.
+- In order to the keep the image of same size and value each pixel in Convolution operation equally we have to keep the image of the size (n+f-1) where n = dimensions of image, f = dimensions of image.
+- We generally do ZERO PADDING.
+
+Strides:
+- Stride controls how the filter moves across the input image.
+- Think of the Convolution operation as a sliding window. The stride in the number of pixels the filter shifts (steps) over after each operation.
+- As we increase the stride the feature map will get reduced.
+- New formula for number of pixels in the output will be 
+- ((n+2p-f)/s + 1).
+- Purpose of using strided convolutions:
+- To just get High level information from image.
+- Computing Power.
+
+The problem with Convolution:
+- Memory Issues 
+- Translation Variance
+
+Pooling Layer:
+- Strides does not solve the problem of Translation Variance but pooling does.
+- Translation Variance
+    - The features that are captured using Convolution Operation are location dependent. 
+    - But in image classification it does not matter at what location the features are there just the features matter but because of convolution same features at different location will be treated differently not the same which is wrong.
+    - This problem is solved by pooling over strides.
+- In a convolution Neural Network (CNN), a Pooling layer is typically inserted after a convolution layer. Its primary Job is downsampling - which reduce the spatial size (width and height) of the representation to reduce the number of parameters and computation in the network.
+- Types of Pooling : MaxPooling, MinPooling, Average Pooling, L2 pooling and global pooling.
+- Hyperparameters of Pooling layer : 
+    - size (2,2)
+    - stride (2)
+    - type - Max
+- Advantages of Pooling
+    - Reduced size of feature maps
+    - Translation Invariance
+    - Enhanced Features (only in case of MaxPooling).
+    - No Need of training (because it is just a aggregate operation).
+    - faster and better in performance compared to strides.
+
+- Disadvantages of Pooling
+    - Some Time Translation Invariance is necessary like in task of Computer Vision location of feature matters hence applying pooling there might cause a performance degradation.
+    - Loss of lots of information.
+
+- A CNN architecture can be made using Convolution Layer, Padding/stride and Pooling layer.
+
+
+Process in CNN:
+
+1. We take an Image we pass it through the convolution layer which has filters. 
+2. This filters capture necessary information at that layer and send it to pooling layer. 
+3. Pooling layer applies pooling operation and solves the problem of translational variance and downsamples the image.
+4. Once we get tensor after passing the image to one or more set of convolution and pooling layer we flatten it.
+5. This flatten information is passed through one or more fully connected layer and after that we get our final output.

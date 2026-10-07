@@ -1,0 +1,167 @@
+Detailed Explanation of `main_01.ipynb`
+
+This document explains each block of code in your Jupyter Notebook step-by-step. The notebook is structured as a standard PyTorch workflow for image classification.
+
+---
+
+### Block 1: Imports
+```python
+import torch 
+import torch.nn as nn 
+import torch.optim as optim 
+import torchvision 
+import torchvision.transforms as transforms 
+from torch.utils.data import DataLoader 
+from torchvision.datasets import ImageFolder
+```
+- `torch`: The main PyTorch library used for creating multi-dimensional arrays (tensors) and performing mathematical operations on them.
+- `torch.nn`: Contains the building blocks for neural networks (like convolutional layers, linear layers, loss functions).
+- `torch.optim`: Contains optimization algorithms like SGD (Stochastic Gradient Descent) and Adam, which adjust the weights of the network to minimize loss.
+- `torchvision`: A PyTorch library specifically for computer vision tasks. It contains popular datasets, model architectures, and image transformations.
+- `transforms`: Functions to preprocess and augment images (e.g., cropping, converting to tensors, normalizing).
+- `DataLoader`: A utility that wraps a dataset and provides an iterable over the data. It helps in batching, shuffling, and loading data in parallel.
+
+---
+
+### Block 2: Device Configuration
+```python
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+```
+- This code checks if a compatible NVIDIA GPU (CUDA) is available on your machine.
+- If it is, it sets the `device` variable to `"cuda"`, meaning all computations and data will be moved to the GPU for faster processing.
+- If not, it falls back to `"cpu"`.
+
+---
+
+### Block 3: Data Transformations
+```python
+transform_train = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+])
+
+transform_test = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+])
+
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+```
+- `transforms.Compose`: Chains multiple transformations together.
+- `RandomCrop` & `RandomHorizontalFlip`: These are "Data Augmentation" techniques applied only to the training set. They randomly alter the images slightly every time they are loaded, which prevents the model from memorizing the exact images and helps it generalize better to new data.
+- `ToTensor`: Converts standard Python/PIL images into PyTorch tensors and scales pixel values from [0, 255] down to [0.0, 1.0].
+- `Normalize`: Subtracts the mean (0.4914, 0.4822, 0.4465) and divides by the standard deviation (0.2023, 0.1994, 0.2010) for the Red, Green, and Blue channels. This centers the data around zero, which helps the neural network learn faster and more stably. (These specific numbers are the known mean/std of the CIFAR-10 dataset).
+- `classes`: A simple tuple storing the human-readable names of the 10 categories in CIFAR-10.
+
+---
+
+### Block 4: Downloading the Dataset
+```python
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
+print(f"Training samples: {len(trainset)}")
+print(f"Testing samples: {len(testset)}")
+```
+- `torchvision.datasets.CIFAR10`: Automatically downloads the CIFAR-10 dataset (if it doesn't already exist) into the `./data` folder.
+- `train=True` loads the 50,000 training images, while `train=False` loads the 10,000 testing images.
+- It also applies the transformations we defined in Block 3.
+
+---
+
+### Block 5: Creating DataLoaders
+```python
+trainloader = DataLoader(trainset, batch_size=64, shuffle=True, num_workers=2)
+testloader = DataLoader(testset, batch_size=64, shuffle=False, num_workers=2)
+```
+- The network doesn't look at all 50,000 images at once; it looks at them in "batches". Here, `batch_size=64` means the model will process 64 images at a time.
+- `shuffle=True` (for training): Randomizes the order of images every epoch so the model doesn't learn the order of the dataset.
+- `num_workers=2`: Uses 2 CPU sub-processes to load data in the background while the GPU is training.
+
+---
+
+### Block 6: Neural Network Architecture
+```python
+import torch.nn.functional as F
+
+class SimpleCNN(nn.Module):
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 32, 3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(64 * 8 * 8, 512)
+        self.fc2 = nn.Linear(512, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = torch.flatten(x, 1)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+net = SimpleCNN().to(device)
+```
+- `__init__`: Defines the layers of the network. 
+  - `Conv2d`: Convolutional layers that extract spatial features (like edges, textures) from the image. 
+  - `MaxPool2d`: Reduces the spatial size (width and height) of the image, making computation faster and reducing overfitting.
+  - `Linear`: Fully connected layers that take the extracted features and use them to classify the image into one of the 10 classes.
+- `forward`: Defines the path the data takes through the network. `F.relu` is an activation function that introduces non-linearity, allowing the network to learn complex patterns.
+- `to(device)`: Moves the entire model to the GPU (or CPU).
+
+---
+
+### Block 7: Loss Function and Optimizer
+```python
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+```
+- `criterion`: The loss function. `CrossEntropyLoss` is the standard loss function for multi-class classification problems. It calculates how far off the model's predictions are from the true labels.
+- `optimizer`: Stochastic Gradient Descent (SGD). It looks at the loss and updates the weights (`net.parameters()`) of the network to make the loss smaller next time. `lr=0.01` is the learning rate (step size), and `momentum=0.9` helps accelerate the optimizer in the right direction.
+
+---
+
+### Block 8: The Training Loop
+```python
+epochs = 5
+for epoch in range(epochs):
+    running_loss = 0.0
+    for i, data in enumerate(trainloader, 0):
+        inputs, labels = data[0].to(device), data[1].to(device)
+
+        optimizer.zero_grad()
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+...
+```
+- **Epoch**: One complete pass through the entire training dataset. We run for 5 epochs.
+- `inputs.to(device)`: Moves the batch of images and labels to the GPU.
+- `optimizer.zero_grad()`: Clears old gradients from the previous step. (PyTorch accumulates gradients by default).
+- `outputs = net(inputs)`: **Forward Pass**. The model guesses what the images are.
+- `loss = criterion(...)`: Calculates how wrong the guesses were.
+- `loss.backward()`: **Backward Pass (Backpropagation)**. Calculates the gradients (how much each weight contributed to the error).
+- `optimizer.step()`: Updates the weights using the calculated gradients to improve the model.
+
+---
+
+### Block 9: Evaluation Loop
+```python
+correct = 0
+total = 0
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data[0].to(device), data[1].to(device)
+        outputs = net(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+```
+- `torch.no_grad()`: Tells PyTorch not to calculate gradients since we are just testing, not training. This saves memory and computation.
+- We loop through the unseen test dataset, have the model make predictions (`outputs`), and check if the prediction (`predicted`) matches the true answer (`labels`). 
+- Finally, it calculates the percentage of correct predictions (Accuracy).
+

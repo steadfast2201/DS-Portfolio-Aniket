@@ -1,0 +1,31 @@
+Topics to Have a Good Understanding of in Image Processing:
+    1. How is the Projection of 3D world on a 2D plane.
+    2. Convert Optical Images to Electrical Signals.
+    3. Two Valued Images: Easy to Store and Process.
+        Example: GreyScale Image and Binary Images.
+    4. Transform Image to a New One that is More Useful.
+    5. Dectecting Intensity Changes in the Image.
+    6. Finding Continuous Lines from Edge Segments.
+    7. 2D Recognition using Features: Matching using "Interesting Points".
+    8. Image Alignment and Stitching: Combine multiple photos to create a larger photo.
+    9. Radiometry and Reflectance
+    10. Photometric Stereo
+    11. Shape from Shading.
+    12. Depth from Focus/Defocus.
+    13. Active Illumination Method.
+    14. Camera Calibration.
+    15. Binocular Stereo.
+    16. Motion and Optical Flow.
+    17. Structure from Motion.
+    18. Image Segmentation: Group pixels together with similar visual Characteristics.
+    19. Object Tracking: Determining the Movement of Objects in Videos.
+    20. Apperance Matching: Object Recognition using Principal Component Analysis.
+
+Reference:
+    Computer Vision: Algo and Applications (Szeliski, R., Springer)
+    Computer Vision: A Modern Approach (Vision)
+    Robot Vision
+    A Guided Tour of Computer Vision
+    Digital Image Processing
+    Optics (Hecht, Addison-Wesley)
+    

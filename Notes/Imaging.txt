@@ -1,0 +1,14 @@
+Image:
+    Projection of 3D scene onto 2D plane. We need to understand the geometric and photometric need to understand the geometric and photometric relationbetween the scene and its image.
+
+    Topics: 
+        Pinhole and Perspective Projection.
+        Image formation using Lenses.
+        Lens Related Issues.
+        Wide Angle Cameras.
+        Animal Eyes.
+
+Perspective Imaging with Pinhole:
+    Perspective Projection of a line: The image of a line in 3D is the image of a line in 2D. Thats why we see the straight line in the 3D world is a straight line in 2D world.
+ 
+    Image Magnification: The ratio of length of the segment in image to the length of the segment in a scene

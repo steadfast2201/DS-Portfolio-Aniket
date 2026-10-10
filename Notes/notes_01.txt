@@ -56,3 +56,4 @@ Process in CNN:
 3. Pooling layer applies pooling operation and solves the problem of translational variance and downsamples the image.
 4. Once we get tensor after passing the image to one or more set of convolution and pooling layer we flatten it.
 5. This flatten information is passed through one or more fully connected layer and after that we get our final output.
+

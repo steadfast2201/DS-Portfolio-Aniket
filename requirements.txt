@@ -1,0 +1,16 @@
+# Core numerical and scientific computing
+numpy
+scipy
+
+# Image processing and visualization
+pillow
+opencv-python
+matplotlib
+
+# Deep learning and Computer Vision
+torch
+torchvision
+
+# Jupyter notebook kernel support
+ipykernel
+

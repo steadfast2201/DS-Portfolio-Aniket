@@ -1,0 +1,118 @@
+EDGE DETECTION METHODS IN COMPUTER VISION
+==========================================
+
+1. FIRST-ORDER (GRADIENT-BASED) OPERATORS
+-----------------------------------------
+These look for peaks in the first derivative of intensity.
+
+- Roberts Cross
+  2x2 kernels along diagonals. Fast but very noise-sensitive.
+  OpenCV: custom filter2D
+
+- Prewitt
+  3x3 kernels with uniform smoothing.
+  OpenCV: custom filter2D
+
+- Sobel
+  3x3 kernels with extra weight on the center row. Good noise balance.
+  OpenCV: cv2.Sobel
+
+- Scharr
+  More rotationally accurate version of Sobel (3x3).
+  OpenCV: cv2.Scharr
+
+- Kirsch / Robinson (compass operators)
+  8 directional kernels, taking the strongest response.
+  OpenCV: custom filter2D
+
+- Frei-Chen
+  Projects onto an edge subspace using a set of basis masks.
+  OpenCV: custom
+
+
+2. SECOND-ORDER (ZERO-CROSSING) OPERATORS
+-----------------------------------------
+These look for zero crossings in the second derivative.
+
+- Laplacian
+  Detects edges in all directions but is very noise-sensitive.
+  OpenCV: cv2.Laplacian
+
+- Laplacian of Gaussian (LoG / Marr-Hildreth)
+  Gaussian smoothing first, then Laplacian.
+
+- Difference of Gaussians (DoG)
+  Fast approximation of LoG, subtracting two blurred versions of the image.
+
+
+3. OPTIMAL / MULTI-STAGE DETECTORS
+----------------------------------
+- Canny
+  Gaussian blur -> Sobel gradient -> non-maximum suppression ->
+  double threshold -> hysteresis. The most widely used classical method.
+  OpenCV: cv2.Canny
+
+- Deriche
+  Recursive-filter refinement of Canny's criteria.
+
+- Shen-Castan (ISEF)
+  Uses an exponential filter instead of a Gaussian.
+
+
+4. OTHER CLASSICAL APPROACHES
+-----------------------------
+- Morphological gradient
+  Dilation minus erosion.
+  OpenCV: cv2.morphologyEx with MORPH_GRADIENT
+
+- SUSAN
+  Compares a pixel to its circular neighborhood, with no derivatives.
+
+- Phase congruency
+  Finds edges where frequency components line up in phase;
+  robust to contrast changes.
+
+- Gabor filter-based
+  Orientation- and scale-selective edge responses.
+
+- Color edge detection (Di Zenzo)
+  Computes the gradient across all color channels instead of grayscale.
+
+- Sub-pixel edge detection
+  Refines edge positions to fractions of a pixel for precision measurement.
+
+
+5. LEARNING-BASED (DEEP LEARNING) DETECTORS
+-------------------------------------------
+- Structured Edge (Structured Forests)
+  Random-forest-based, available in opencv-contrib.
+
+- HED (Holistically-Nested Edge Detection)
+  First widely adopted CNN edge detector.
+
+- RCF (Richer Convolutional Features)
+  Improves on HED with multi-scale features.
+
+- BDCN
+  Bi-directional cascade network for multi-scale edges.
+
+- PiDiNet
+  Lightweight, using pixel-difference convolutions.
+
+- DexiNed / TEED
+  Dense, efficient networks that need no pretraining.
+
+
+QUICK COMPARISON
+----------------
+Need                                      Good choice
+----------------------------------------  ---------------------------
+Fast, simple, learning purposes           Sobel / Prewitt
+Clean, thin, connected edges              Canny
+Rotation-accurate gradients               Scharr
+Blob / zero-crossing style edges          LoG / DoG
+Noisy real-world photos, semantic edges   HED / PiDiNet / DexiNed
+
+Most commonly tested in courses: Sobel, Laplacian, Canny.
+Basic pipeline: smooth -> compute gradient (first or second order)
+-> threshold or locate zero crossings.

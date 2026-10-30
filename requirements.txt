@@ -1,0 +1,12 @@
+# Core numerical and scientific computing
+numpy
+scipy
+
+# Image processing and visualization
+pillow
+opencv-python
+matplotlib
+
+# Jupyter notebook kernel support
+ipykernel
+

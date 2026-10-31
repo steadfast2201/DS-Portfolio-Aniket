@@ -145,7 +145,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Allow cross-origin referrer header for map tile providers
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
-# Allow React Frontend (Vite port 5173) to talk to Django Backend (port 8000)
+# Allow React Frontend (Vite port 5173) and live domains to talk to Django Backend
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    'https://chargepe24.in',
+    'https://www.chargepe24.in',
+    'https://*.vercel.app',
+    'https://*.up.railway.app',
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 

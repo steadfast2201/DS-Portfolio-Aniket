@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>Co-Charger India — Community P2P EV Charging Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <!-- Top Navbar with Role Mode Switcher -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-slate-950 text-lg">⚡</div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white">
+                        Co-Charger India
+                        <span class="text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full ml-1.5">Step 2: Full-Stack Role Modes</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Community EV Charging • RWA Apartments, Independent Homes & Kirana Hubs</p>
+                </div>
+            </div>
+
+            <!-- 3 Role Mode Tabs -->
+            <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                <button id="tab-chargee" onclick="switchMode('chargee')" class="px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 transition">
+                    🚗 1. Chargee Mode (Find & Book)
+                </button>
+                <button id="tab-host" onclick="switchMode('host')" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-white transition">
+                    🏠 2. Host Mode (Add Charger & Earnings)
+                </button>
+                <button id="tab-guard" onclick="switchMode('guard')" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-white transition">
+                    🛡️ 3. Society Guard Portal
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+                <a href="/api/" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">REST API (/api/)</a>
+                <a href="/admin/" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 transition">Admin (/admin/)</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- ========================================================= -->
+        <!-- MODE 1: CHARGEE MODE (EV DRIVER DISCOVERY & SLOT BOOKING) -->
+        <!-- ========================================================= -->
+        <section id="view-chargee" class="space-y-6">
+
+            <!-- Live Filter Bar -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <span class="font-semibold text-slate-300">🔍 Filter Chargers:</span>
+                    <select id="filterConnector" onchange="applyMapFilters()" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+                        <option value="">All Plug Types (15A & Type 2)</option>
+                        <option value="15A_SOCKET">15A/16A 3-Pin Socket (Scooters/Cars)</option>
+                        <option value="TYPE_2">Type 2 AC Fast Charger (7.2kW+)</option>
+                        <option value="BHARAT_AC001">Bharat AC-001</option>
+                    </select>
+                    <select id="filterSegment" onchange="applyMapFilters()" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+                        <option value="">All Segments (Society / Home / Kirana)</option>
+                        <option value="INTRA_SOCIETY">1. Intra-Society P2P (Gated RWA)</option>
+                        <option value="INDEPENDENT_HOME">2. Independent Home / Bungalow</option>
+                        <option value="KIRANA_COMMERCIAL">3. Kirana Store / Micro-Commercial</option>
+                    </select>
+                    <select id="filterVehicles" onchange="applyMapFilters()" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+                        <option value="">All EV Types (2W / 3W / 4W)</option>
+                        <option value="2W_3W_ONLY">2-Wheelers & 3-Wheelers Supported</option>
+                        <option value="4W_ONLY">4-Wheelers Supported</option>
+                    </select>
+                    <button onclick="resetFilters()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Reset</button>
+                </div>
+                <div id="filterStatusText" class="text-xs text-emerald-400 font-medium">
+                    Showing all {{ chargers|length }} active community chargers
+                </div>
+            </div>
+
+            <!-- Map + Booking Form Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left 2 Columns: Google Maps & Dynamic Charger Cards -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                        <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                            <h2 class="font-semibold text-sm text-white">📍 Google Maps — Community Chargers Near You</h2>
+                            <span class="text-xs text-slate-400">Click any pin or card to select charger</span>
+                        </div>
+                        <div id="map" class="w-full h-80 z-10"></div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                        <h2 class="font-semibold text-sm text-white mb-3">🔌 Matching Host Chargers</h2>
+                        <div id="chargerCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Slot Booking Calculator & Form -->
+                <div class="space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                        <h2 class="font-semibold text-sm text-white mb-1">📅 Reserve Slot & Generate Gate Pass</h2>
+                        <p class="text-xs text-slate-400 mb-3">Checks slot conflicts in PostgreSQL & issues a 6-digit Society Gate Pass.</p>
+
+                        <form id="bookingForm" class="space-y-3 text-xs">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Chargee (EV Driver)</label>
+                                <select id="chargeeSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200">
+                                    {% for p in profiles %}
+                                    <option value="{{ p.id }}">{{ p.user.first_name|default:p.user.username }} ({{ p.phone }}) - {{ p.society_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Select EV</label>
+                                <select id="vehicleSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200">
+                                    {% for v in vehicles %}
+                                    <option value="{{ v.id }}">{{ v.make_model }} ({{ v.registration_number }} • {{ v.get_category_display }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Selected Host Charger</label>
+                                <select id="chargerSelect" onchange="updatePricePreview()" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200">
+                                    {% for c in chargers %}
+                                    <option value="{{ c.id }}" data-kwh="{{ c.rate_per_kwh }}" data-hr="{{ c.rate_per_hour }}">
+                                        {{ c.title }} (₹{{ c.rate_per_kwh }}/kWh + ₹{{ c.rate_per_hour }}/hr)
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Start Date & Time</label>
+                                    <input type="datetime-local" id="startTimeInput" onchange="updatePricePreview()" required
+                                           class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-slate-200" />
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 mb-1">End Date & Time</label>
+                                    <input type="datetime-local" id="endTimeInput" onchange="updatePricePreview()" required
+                                           class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-slate-200" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Booking Routine</label>
+                                    <select id="bookingType" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200">
+                                        <option value="RECURRING_WEEKLY">Recurring Weekly</option>
+                                        <option value="ONE_OFF">One-Off Session</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Est. Energy (kWh)</label>
+                                    <input type="number" step="0.5" id="estimatedKwh" oninput="updatePricePreview()" value="6.0"
+                                           class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                                </div>
+                            </div>
+
+                            <!-- Live Tariff Preview Box -->
+                            <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+                                <div class="flex justify-between text-slate-400">
+                                    <span>Estimated Bill Total:</span>
+                                    <span id="previewTotal" class="font-bold text-emerald-400 text-sm">₹132.00</span>
+                                </div>
+                                <div class="flex justify-between text-[11px] text-slate-500">
+                                    <span id="previewHostShare">Host Payout (90%): ₹118.80</span>
+                                    <span id="previewPlatformFee">Platform (10%): ₹13.20</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition">
+                                Confirm Booking & Issue Gate Pass
+                            </button>
+                        </form>
+                        <div id="bookingResult" class="hidden mt-3 p-3 rounded-lg text-xs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Bookings & Session Control Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                    <h2 class="font-semibold text-sm text-white">📋 Active Bookings, Live Charging Sessions & UPI Split Invoices</h2>
+                    <span class="text-xs text-slate-400">Start or Complete any session below to see live backend state updates</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950/70 text-slate-400 uppercase">
+                            <tr>
+                                <th class="py-3 px-4">ID</th>
+                                <th class="py-3 px-4">Driver & EV</th>
+                                <th class="py-3 px-4">Charger & Bay</th>
+                                <th class="py-3 px-4">Slot Window</th>
+                                <th class="py-3 px-4">Gate Pass PIN</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Bill & 90/10 Split</th>
+                                <th class="py-3 px-4">Session Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {% for b in bookings %}
+                            <tr class="hover:bg-slate-800/40">
+                                <td class="py-3 px-4 font-mono text-slate-400">#{{ b.id }}</td>
+                                <td class="py-3 px-4">
+                                    <div class="font-medium text-slate-200">{{ b.chargee.user.first_name|default:b.chargee.user.username }}</div>
+                                    <div class="text-slate-400">{{ b.vehicle.make_model }} ({{ b.vehicle.registration_number }})</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="font-medium text-emerald-400">{{ b.charger.title }}</div>
+                                    <div class="text-slate-400">Bay: {{ b.charger.parking_bay_number }}</div>
+                                </td>
+                                <td class="py-3 px-4 text-slate-300">
+                                    <div>{{ b.start_time|date:"d M, h:i A" }}</div>
+                                    <div class="text-slate-500">to {{ b.end_time|date:"h:i A" }} ({{ b.duration_hours }}h)</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="openGuardWithCode('{{ b.gate_pass_code }}')"
+                                            title="Click to test in Society Guard Portal"
+                                            class="font-mono font-bold px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25">
+                                        🔑 {{ b.gate_pass_code }}
+                                    </button>
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if b.status == 'IN_PROGRESS' %}
+                                        <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 animate-pulse">⚡ Charging Live</span>
+                                    {% elif b.status == 'COMPLETED' %}
+                                        <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ Completed</span>
+                                    {% else %}
+                                        <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-200">{{ b.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if b.session and b.session.invoice %}
+                                        <div class="font-bold text-white">₹{{ b.session.invoice.total_amount }} ({{ b.session.total_energy_kwh }} kWh)</div>
+                                        <div class="text-[11px] text-emerald-400">Host (90%): ₹{{ b.session.invoice.host_payout_amount }} • Platform: ₹{{ b.session.invoice.platform_fee }}</div>
+                                    {% else %}
+                                        <div class="text-slate-400">Est: ₹{{ b.estimated_total_inr }} ({{ b.estimated_kwh }} kWh)</div>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 space-x-1">
+                                    {% if b.status == 'CONFIRMED' %}
+                                        <button onclick="startSession({{ b.id }})"
+                                                class="px-2.5 py-1 rounded bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 transition">
+                                            ▶️ Start
+                                        </button>
+                                    {% endif %}
+                                    {% if b.status != 'COMPLETED' %}
+                                        <button onclick="completeSession({{ b.id }}, {{ b.estimated_kwh }})"
+                                                class="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition">
+                                            ⏹️ Stop & Bill
+                                        </button>
+                                    {% else %}
+                                        <span class="text-emerald-400 font-medium">✓ {{ b.session.invoice.upi_transaction_ref }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODE 2: HOST MODE (ONBOARD NEW CHARGER + EARNINGS LEDGER) -->
+        <!-- ========================================================= -->
+        <section id="view-host" class="hidden space-y-6">
+
+            <!-- Host Financial Metrics -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="text-xs text-slate-400">Net Host UPI Payouts (90%)</div>
+                    <div class="text-2xl font-bold text-emerald-400 mt-1">₹{{ total_host_payout }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Settled directly to Host UPI IDs</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="text-xs text-slate-400">Gross Charging Volume</div>
+                    <div class="text-2xl font-bold text-white mt-1">₹{{ total_gross }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Energy + Parking Slot Fees</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="text-xs text-slate-400">Platform Commission (10%)</div>
+                    <div class="text-2xl font-bold text-purple-400 mt-1">₹{{ total_platform_fee }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Co-Charger India Revenue</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="text-xs text-slate-400">Total Energy Shared</div>
+                    <div class="text-2xl font-bold text-sky-400 mt-1">{{ total_kwh }} kWh</div>
+                    <div class="text-xs text-slate-500 mt-1">Across {{ chargers|length }} active host points</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Left: Add New Host Charger Form -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <h2 class="font-semibold text-base text-white mb-1">➕ List Your Parking Bay Charger (Host Onboarding)</h2>
+                    <p class="text-xs text-slate-400 mb-4">Click anywhere on the Google Map on the right to auto-fill your exact Latitude & Longitude.</p>
+
+                    <form id="addChargerForm" class="space-y-3 text-xs">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Host Owner</label>
+                                <select id="hostOwner" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200">
+                                    {% for hp in host_profiles %}
+                                    <option value="{{ hp.id }}">{{ hp.user.first_name|default:hp.user.username }} ({{ hp.upi_id }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Market Segment</label>
+                                <select id="hostSegment" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200">
+                                    <option value="INTRA_SOCIETY">1. Intra-Society P2P (Gated RWA)</option>
+                                    <option value="INDEPENDENT_HOME">2. Independent Home / Bungalow</option>
+                                    <option value="KIRANA_COMMERCIAL">3. Kirana Store / Commercial</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-400 mb-1">Charger Listing Title</label>
+                            <input type="text" id="hostTitle" required placeholder="e.g., Blue Ridge Tower 8 — Basement Slot P-42"
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Society / Area Name</label>
+                                <input type="text" id="hostSociety" required placeholder="e.g., Blue Ridge Township, Hinjewadi"
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Parking Bay / Slot No.</label>
+                                <input type="text" id="hostBay" required placeholder="e.g., Basement-2, Bay #42"
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Hardware Tier</label>
+                                <select id="hostHardware" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-slate-200">
+                                    <option value="DUMB_15A">Tier 1: 15A Socket</option>
+                                    <option value="IOT_SMART_PLUG">Tier 2: IoT Smart Plug</option>
+                                    <option value="OCPP_EVSE">Tier 3: OCPP Wallbox</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Connector Type</label>
+                                <select id="hostConnector" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-slate-200">
+                                    <option value="15A_SOCKET">15A/16A 3-Pin</option>
+                                    <option value="TYPE_2">Type 2 AC</option>
+                                    <option value="BHARAT_AC001">Bharat AC-001</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Supported EVs</label>
+                                <select id="hostVehicles" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-slate-200">
+                                    <option value="ALL_EVS">All EVs (2W/4W)</option>
+                                    <option value="2W_3W_ONLY">2W & 3W Only</option>
+                                    <option value="4W_ONLY">4W Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Max Power (kW)</label>
+                                <input type="number" step="0.1" id="hostPower" value="3.3" required
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Rate per kWh (₹)</label>
+                                <input type="number" step="0.5" id="hostRateKwh" value="12.0" required
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Slot Fee / Hr (₹)</label>
+                                <input type="number" step="1" id="hostRateHr" value="15.0" required
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Latitude (Click Map →)</label>
+                                <input type="number" step="0.000001" id="hostLat" value="18.591271" required
+                                       class="w-full bg-slate-950 border border-emerald-500/40 rounded-lg px-3 py-2 text-emerald-300 font-mono" />
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Longitude (Click Map →)</label>
+                                <input type="number" step="0.000001" id="hostLng" value="73.738901" required
+                                       class="w-full bg-slate-950 border border-emerald-500/40 rounded-lg px-3 py-2 text-emerald-300 font-mono" />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition">
+                            Publish Charger to Community Map
+                        </button>
+                    </form>
+                    <div id="hostFormResult" class="hidden mt-3 p-3 rounded-lg text-xs"></div>
+                </div>
+
+                <!-- Right: Interactive Google Map Pin Picker + Host Earnings Table -->
+                <div class="space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                        <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                            <h3 class="font-semibold text-sm text-white">📌 Click on Google Map to Set Charger Location</h3>
+                            <span class="text-xs text-emerald-400">Draggable Pin</span>
+                        </div>
+                        <div id="hostPickerMap" class="w-full h-64 z-10"></div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                        <h3 class="font-semibold text-sm text-white mb-3">💰 Host UPI Earnings Breakdown</h3>
+                        <div id="hostAnalyticsContainer" class="space-y-2 text-xs"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODE 3: SOCIETY SECURITY GUARD PORTAL (MYGATE-STYLE)      -->
+        <!-- ========================================================= -->
+        <section id="view-guard" class="hidden max-w-2xl mx-auto space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-white">🛡️ Society Main Gate — EV Guest Verification</h2>
+                        <p class="text-xs text-slate-400">Enter the 6-digit Co-Charger Gate Pass PIN shown by the visiting EV driver.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30">Guard Desk Active</span>
+                </div>
+
+                <!-- Quick Test Pills -->
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <span class="text-slate-400">Quick-test active passes:</span>
+                    {% for b in bookings %}
+                    <button onclick="document.getElementById('gatePassInput').value='{{ b.gate_pass_code }}'; verifyPass(false);"
+                            class="font-mono px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700">
+                        {{ b.gate_pass_code }} ({{ b.vehicle.registration_number }})
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <div class="flex gap-3">
+                    <input id="gatePassInput" type="text" maxlength="6" placeholder="Enter 6-digit PIN (e.g. 482910)"
+                           class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-lg tracking-widest font-mono text-emerald-400" />
+                    <button onclick="verifyPass(false)" class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition">
+                        Verify Gate Pass
+                    </button>
+                </div>
+
+                <div id="gatePassResult" class="hidden mt-4 p-5 rounded-xl text-sm"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let allChargers = [];
+        let map, markersLayer, hostMap, hostPinMarker;
+        const markersById = {};
+
+        // Initialize Default Date/Time Inputs (Tonight 10 PM to 2 AM)
+        function initDateInputs() {
+            const now = new Date();
+            const start = new Date(now.getTime() + 2 * 3600 * 1000);
+            const end = new Date(start.getTime() + 4 * 3600 * 1000);
+            const fmt = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('startTimeInput').value = fmt(start);
+            document.getElementById('endTimeInput').value = fmt(end);
+            updatePricePreview();
+        }
+
+        // Switch between Chargee, Host, and Guard views
+        function switchMode(mode) {
+            ['chargee', 'host', 'guard'].forEach(m => {
+                document.getElementById(`view-${m}`).classList.toggle('hidden', m !== mode);
+                const btn = document.getElementById(`tab-${m}`);
+                if (m === mode) {
+                    btn.className = 'px-3.5 py-2 rounded-lg bg-emerald-500 text-slate-950 transition';
+                } else {
+                    btn.className = 'px-3.5 py-2 rounded-lg text-slate-400 hover:text-white transition';
+                }
+            });
+            if (mode === 'chargee' && map) {
+                setTimeout(() => map.invalidateSize(), 150);
+            }
+            if (mode === 'host') {
+                initHostMap();
+                loadHostAnalytics();
+            }
+        }
+
+        function openGuardWithCode(code) {
+            switchMode('guard');
+            document.getElementById('gatePassInput').value = code;
+            verifyPass(false);
+        }
+
+        // Initialize Chargee Google Map
+        function initMainMap() {
+            map = L.map('map').setView([18.5204, 73.8567], 12);
+            const googleStreets = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['0', '1', '2', '3'],
+                attribution: '&copy; Google Maps'
+            });
+            const googleHybrid = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['0', '1', '2', '3'],
+                attribution: '&copy; Google Maps Satellite'
+            });
+            googleStreets.addTo(map);
+            L.control.layers({
+                "Google Maps (Streets)": googleStreets,
+                "Google Maps (Satellite)": googleHybrid
+            }).addTo(map);
+
+            markersLayer = L.layerGroup().addTo(map);
+            applyMapFilters();
+        }
+
+        // Fetch Chargers from Django Backend API with active filters
+        async function applyMapFilters() {
+            const connector = document.getElementById('filterConnector').value;
+            const segment = document.getElementById('filterSegment').value;
+            const vehicles = document.getElementById('filterVehicles').value;
+
+            const params = new URLSearchParams();
+            if (connector) params.append('connector', connector);
+            if (segment) params.append('segment', segment);
+            if (vehicles) params.append('vehicles', vehicles);
+
+            const res = await fetch(`/api/chargers/?${params.toString()}`);
+            allChargers = await res.json();
+
+            document.getElementById('filterStatusText').innerText =
+                `Showing ${allChargers.length} matching charger(s)`;
+
+            renderChargersOnMapAndCards(allChargers);
+        }
+
+        function resetFilters() {
+            document.getElementById('filterConnector').value = '';
+            document.getElementById('filterSegment').value = '';
+            document.getElementById('filterVehicles').value = '';
+            applyMapFilters();
+        }
+
+        function renderChargersOnMapAndCards(chargers) {
+            markersLayer.clearLayers();
+            const container = document.getElementById('chargerCardsContainer');
+            container.innerHTML = '';
+
+            if (!chargers.length) {
+                container.innerHTML = `<div class="col-span-2 text-xs text-slate-400 p-4 border border-slate-800 rounded-lg">No chargers match the selected filters. Try resetting filters.</div>`;
+                return;
+            }
+
+            const bounds = [];
+            chargers.forEach(c => {
+                const lat = parseFloat(c.latitude);
+                const lng = parseFloat(c.longitude);
+                bounds.push([lat, lng]);
+
+                const marker = L.marker([lat, lng]).addTo(markersLayer);
+                markersById[c.id] = { marker, lat, lng };
+                const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+                marker.bindPopup(`
+                    <div style="min-width:200px;color:#0f172a">
+                        <b>${c.title}</b><br/>
+                        <span>Bay: <b>${c.parking_bay_number}</b></span><br/>
+                        <span>${c.connector_display} (${c.max_power_kw} kW)</span><br/>
+                        <span><b>₹${c.rate_per_kwh}/kWh</b> + ₹${c.rate_per_hour}/hr</span><br/>
+                        <a href="${gmapsUrl}" target="_blank" style="display:inline-block;margin-top:6px;color:#059669;font-weight:600;text-decoration:underline;">
+                            🧭 Navigate in Google Maps
+                        </a>
+                    </div>
+                `);
+                marker.on('click', () => selectCharger(c.id));
+
+                const card = document.createElement('div');
+                card.className = 'border border-slate-800 bg-slate-950/60 rounded-lg p-3.5 hover:border-emerald-500/50 transition cursor-pointer';
+                card.onclick = () => selectCharger(c.id);
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <h3 class="font-semibold text-sm text-emerald-400">${c.title}</h3>
+                        <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">${c.max_power_kw} kW</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">${c.society_name || c.address} • Bay: <strong class="text-slate-200">${c.parking_bay_number}</strong></p>
+                    <div class="mt-2.5 flex flex-wrap gap-1.5 text-[11px]">
+                        <span class="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">${c.connector_display}</span>
+                        <span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">${c.segment_display.split('(')[0]}</span>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                        <span class="text-slate-300">⚡ <strong>₹${c.rate_per_kwh}</strong>/kWh + <strong>₹${c.rate_per_hour}</strong>/hr</span>
+                        <a href="${gmapsUrl}" target="_blank" onclick="event.stopPropagation();" class="text-sky-400 hover:underline font-medium">🧭 Google Maps ↗</a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [35, 35], maxZoom: 14 });
+            }
+        }
+
+        function selectCharger(id) {
+            const sel = document.getElementById('chargerSelect');
+            sel.value = id;
+            updatePricePreview();
+            if (markersById[id]) {
+                map.flyTo([markersById[id].lat, markersById[id].lng], 15, { duration: 0.7 });
+                markersById[id].marker.openPopup();
+            }
+        }
+
+        function updatePricePreview() {
+            const sel = document.getElementById('chargerSelect');
+            const opt = sel.options[sel.selectedIndex];
+            if (!opt) return;
+            const rateKwh = parseFloat(opt.getAttribute('data-kwh') || '12');
+            const rateHr = parseFloat(opt.getAttribute('data-hr') || '15');
+            const kwh = parseFloat(document.getElementById('estimatedKwh').value || '5');
+
+            const start = new Date(document.getElementById('startTimeInput').value);
+            const end = new Date(document.getElementById('endTimeInput').value);
+            let hrs = (end - start) / 3600000;
+            if (isNaN(hrs) || hrs <= 0) hrs = 4;
+
+            const gross = (kwh * rateKwh) + (hrs * rateHr);
+            const fee = gross * 0.10;
+            const hostNet = gross - fee;
+
+            document.getElementById('previewTotal').innerText = `₹${gross.toFixed(2)} (${hrs.toFixed(1)}h)`;
+            document.getElementById('previewHostShare').innerText = `Host Payout (90%): ₹${hostNet.toFixed(2)}`;
+            document.getElementById('previewPlatformFee').innerText = `Platform (10%): ₹${fee.toFixed(2)}`;
+        }
+
+        // Submit Booking
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const startVal = document.getElementById('startTimeInput').value;
+            const endVal = document.getElementById('endTimeInput').value;
+
+            const payload = {
+                chargee: parseInt(document.getElementById('chargeeSelect').value),
+                vehicle: parseInt(document.getElementById('vehicleSelect').value),
+                charger: parseInt(document.getElementById('chargerSelect').value),
+                booking_type: document.getElementById('bookingType').value,
+                estimated_kwh: parseFloat(document.getElementById('estimatedKwh').value),
+                start_time: new Date(startVal).toISOString(),
+                end_time: new Date(endVal).toISOString()
+            };
+
+            const res = await fetch('/api/bookings/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            const box = document.getElementById('bookingResult');
+            box.classList.remove('hidden');
+            if (res.ok) {
+                box.className = 'mt-3 p-3 rounded-lg text-xs bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
+                box.innerHTML = `✅ <strong>Booking Confirmed!</strong> Society Gate Pass PIN: <span class="font-mono font-bold text-sm">${data.gate_pass_code}</span>. Refreshing...`;
+                setTimeout(() => location.reload(), 1100);
+            } else {
+                box.className = 'mt-3 p-3 rounded-lg text-xs bg-rose-500/15 border border-rose-500/30 text-rose-300';
+                box.innerText = JSON.stringify(data);
+            }
+        });
+
+        // Start & Complete Session Controls
+        async function startSession(bookingId) {
+            const res = await fetch(`/api/bookings/${bookingId}/start_session/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({initial_meter_kwh: 100.0})
+            });
+            if (res.ok) location.reload();
+        }
+
+        async function completeSession(bookingId, kwh) {
+            const res = await fetch(`/api/bookings/${bookingId}/stop_session/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({total_energy_kwh: kwh, end_reason: 'TIMER_EXPIRY'})
+            });
+            if (res.ok) location.reload();
+        }
+
+        // Initialize Host Mode Map Pin Picker
+        function initHostMap() {
+            if (hostMap) {
+                setTimeout(() => hostMap.invalidateSize(), 150);
+                return;
+            }
+            const initLat = parseFloat(document.getElementById('hostLat').value);
+            const initLng = parseFloat(document.getElementById('hostLng').value);
+            hostMap = L.map('hostPickerMap').setView([initLat, initLng], 13);
+            L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['0', '1', '2', '3'],
+                attribution: '&copy; Google Maps'
+            }).addTo(hostMap);
+
+            hostPinMarker = L.marker([initLat, initLng], { draggable: true }).addTo(hostMap);
+            hostPinMarker.bindPopup("<b>New Host Charger Location</b><br/>Click map or drag pin").openPopup();
+
+            hostMap.on('click', (e) => {
+                const { lat, lng } = e.latlng;
+                hostPinMarker.setLatLng([lat, lng]);
+                document.getElementById('hostLat').value = lat.toFixed(6);
+                document.getElementById('hostLng').value = lng.toFixed(6);
+            });
+
+            hostPinMarker.on('dragend', () => {
+                const pos = hostPinMarker.getLatLng();
+                document.getElementById('hostLat').value = pos.lat.toFixed(6);
+                document.getElementById('hostLng').value = pos.lng.toFixed(6);
+            });
+        }
+
+        // Submit New Host Charger
+        document.getElementById('addChargerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                host: parseInt(document.getElementById('hostOwner').value),
+                segment_type: document.getElementById('hostSegment').value,
+                title: document.getElementById('hostTitle').value,
+                society_name: document.getElementById('hostSociety').value,
+                parking_bay_number: document.getElementById('hostBay').value,
+                address: document.getElementById('hostSociety').value + ', Pune',
+                city: 'Pune',
+                hardware_tier: document.getElementById('hostHardware').value,
+                connector_type: document.getElementById('hostConnector').value,
+                supported_vehicles: document.getElementById('hostVehicles').value,
+                max_power_kw: parseFloat(document.getElementById('hostPower').value),
+                rate_per_kwh: parseFloat(document.getElementById('hostRateKwh').value),
+                rate_per_hour: parseFloat(document.getElementById('hostRateHr').value),
+                latitude: parseFloat(document.getElementById('hostLat').value),
+                longitude: parseFloat(document.getElementById('hostLng').value),
+                requires_gate_pass: true,
+                is_active: true
+            };
+
+            const res = await fetch('/api/chargers/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            const box = document.getElementById('hostFormResult');
+            box.classList.remove('hidden');
+            if (res.ok) {
+                box.className = 'mt-3 p-3 rounded-lg text-xs bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
+                box.innerHTML = `✅ <strong>Charger Listed!</strong> "${data.title}" is now live on Google Maps. Reloading...`;
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                box.className = 'mt-3 p-3 rounded-lg text-xs bg-rose-500/15 border border-rose-500/30 text-rose-300';
+                box.innerText = JSON.stringify(data);
+            }
+        });
+
+        async function loadHostAnalytics() {
+            const res = await fetch('/api/host-analytics/');
+            const hosts = await res.json();
+            const container = document.getElementById('hostAnalyticsContainer');
+            container.innerHTML = hosts.map(h => `
+                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <div class="font-semibold text-slate-200">${h.host_name} <span class="text-slate-500">(${h.society_name})</span></div>
+                        <div class="text-slate-400">UPI: <span class="font-mono text-sky-400">${h.upi_id}</span> • ${h.chargers_count} Charger(s) • ${h.completed_sessions} Paid Session(s)</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-emerald-400">₹${parseFloat(h.net_host_earnings_inr).toFixed(2)}</div>
+                        <div class="text-[11px] text-slate-500">90% Net Earnings</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Society Security Guard Gate Pass Verification
+        async function verifyPass(markArrived = false) {
+            const code = document.getElementById('gatePassInput').value.trim();
+            const res = await fetch('/api/verify-gate-pass/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ code, mark_arrived: markArrived })
+            });
+            const data = await res.json();
+            const box = document.getElementById('gatePassResult');
+            box.classList.remove('hidden');
+            if (res.ok && data.valid) {
+                box.className = 'mt-4 p-5 rounded-xl text-xs bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-100 space-y-2';
+                box.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-base font-bold text-emerald-400">✅ GATE ENTRY AUTHORIZED</span>
+                        <span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-semibold">${data.status}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-500/20">
+                        <div><span class="text-slate-400">Visiting EV Plate:</span><br/><strong class="text-sm text-white font-mono">${data.vehicle_plate}</strong> (${data.vehicle_model})</div>
+                        <div><span class="text-slate-400">Assigned Parking Bay:</span><br/><strong class="text-sm text-amber-300">${data.parking_bay}</strong> (${data.society_name})</div>
+                        <div><span class="text-slate-400">Guest Driver:</span><br/><strong>${data.guest_name}</strong> (${data.guest_phone})</div>
+                        <div><span class="text-slate-400">Society Host:</span><br/><strong>${data.host_name}</strong> (${data.host_flat})</div>
+                    </div>
+                    ${data.status_code === 'CONFIRMED' ? `
+                        <button onclick="verifyPass(true)" class="mt-3 w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition">
+                            🚗 Mark Vehicle Entered at Gate & Start Charging Session
+                        </button>
+                    ` : `<div class="pt-2 text-emerald-300 font-semibold">⚡ Vehicle is currently inside & charging at Bay ${data.parking_bay}.</div>`}
+                `;
+            } else {
+                box.className = 'mt-4 p-5 rounded-xl text-xs bg-rose-500/15 border-2 border-rose-500/40 text-rose-300';
+                box.innerHTML = `<div class="font-bold text-sm">❌ ENTRY DENIED</div><div class="mt-1">${data.message || 'Gate Pass is expired, completed, or invalid.'}</div>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDateInputs();
+            initMainMap();
+        });
+    </script>
+</body>
+</html>

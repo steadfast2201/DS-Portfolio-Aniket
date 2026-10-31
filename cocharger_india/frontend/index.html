@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="icon" type="image/png" href="/ChargePe24logo.png" />
+    <title>ChargePe24 — Community EV Charging</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      /* Strictly Two-Color Palette: Pale White (#F5F4F0) and Black (#111111) */
+      body {
+        background-color: #F5F4F0;
+        color: #111111;
+      }
+      /* Apply grayscale to individual tile images so Leaflet pane positioning stays intact */
+      img.leaflet-tile {
+        filter: grayscale(100%) contrast(115%) !important;
+      }
+      .leaflet-container {
+        background-color: #F5F4F0 !important;
+      }
+      /* Hide colored Leaflet flag SVG in bottom-right corner */
+      .leaflet-control-attribution svg {
+        display: none !important;
+      }
+      .leaflet-popup-content-wrapper,
+      .leaflet-popup-tip {
+        background-color: #F5F4F0 !important;
+        color: #111111 !important;
+        border: 2px solid #111111 !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+      }
+      .leaflet-control-zoom a,
+      .leaflet-control-layers {
+        background-color: #F5F4F0 !important;
+        color: #111111 !important;
+        border: 1px solid #111111 !important;
+        box-shadow: none !important;
+      }
+      .leaflet-control-attribution {
+        background-color: #F5F4F0 !important;
+        color: #111111 !important;
+        border-top: 1px solid #111111 !important;
+        border-left: 1px solid #111111 !important;
+      }
+      .leaflet-control-attribution a {
+        color: #111111 !important;
+        text-decoration: underline !important;
+      }
+      input, select, button {
+        color: #111111;
+      }
+      ::placeholder {
+        color: #111111 !important;
+        opacity: 1 !important;
+      }
+    </style>
+  </head>
+  <body class="bg-[#F5F4F0] text-[#111111] min-h-screen font-sans antialiased selection:bg-[#111111] selection:text-[#F5F4F0]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

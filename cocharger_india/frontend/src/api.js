@@ -85,11 +85,11 @@ export async function verifyGatePassPin(code, markArrived = false) {
 
 
 
-export async function loginUser(identifier, password) {
+export async function loginUser(username, password) {
   const res = await fetch(`${API_BASE}/auth/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier, password }),
+    body: JSON.stringify({ username, identifier: username, password }),
   });
   const data = await res.json();
   return { ok: res.ok, data };

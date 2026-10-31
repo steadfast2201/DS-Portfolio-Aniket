@@ -242,28 +242,28 @@ def host_analytics(request):
 @api_view(['POST'])
 def auth_login(request):
     """
-    Sign in with phone number or username + password.
-    For demo convenience, if password is 'demo' or matches user password, returns UserProfile.
+    Sign in with username + password.
+    For demo convenience, if password is 'demo123' or matches user password, returns UserProfile.
     """
-    identifier = str(request.data.get('identifier', '')).strip()
+    identifier = str(request.data.get('username') or request.data.get('identifier') or '').strip()
     password = str(request.data.get('password', '')).strip()
 
     if not identifier:
-        return Response({'error': 'Please enter your phone number or username.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Please enter your username.'}, status=status.HTTP_400_BAD_REQUEST)
 
     profile = UserProfile.objects.select_related('user').prefetch_related('vehicles').filter(
-        Q(phone__iexact=identifier) | Q(user__username__iexact=identifier) | Q(user__email__iexact=identifier)
+        Q(user__username__iexact=identifier) | Q(phone__iexact=identifier)
     ).first()
 
     if not profile:
-        return Response({'error': 'No account found with that phone number or username.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'No account found with that username.'}, status=status.HTTP_404_NOT_FOUND)
 
     user = profile.user
     # Check standard Django password (or allow if user was seeded without a password hash)
     if user.has_usable_password() and password != 'demo123':
         authed = authenticate(username=user.username, password=password)
         if not authed:
-            return Response({'error': 'Incorrect password. (Tip: use demo123 for seeded accounts)'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Incorrect password. (Tip: use demo123 for demo accounts)'}, status=status.HTTP_401_UNAUTHORIZED)
 
     return Response(UserProfileSerializer(profile).data, status=status.HTTP_200_OK)
 
@@ -271,8 +271,9 @@ def auth_login(request):
 @api_view(['POST'])
 def auth_register(request):
     """
-    Register a new ChargePe24 user (Host, Chargee, or Both) and optional EV.
+    Register a new ChargePe24 user (Host, Chargee, or Both) with a chosen username and optional EV.
     """
+    username = str(request.data.get('username', '')).strip()
     full_name = str(request.data.get('full_name', '')).strip()
     phone = str(request.data.get('phone', '')).strip()
     password = str(request.data.get('password', '')).strip()
@@ -282,15 +283,16 @@ def auth_register(request):
     city = str(request.data.get('city', 'Pune')).strip()
     upi_id = str(request.data.get('upi_id', '')).strip()
 
-    if not full_name or not phone or not password:
-        return Response({'error': 'Full name, phone number, and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not username or not full_name or not password:
+        return Response({'error': 'Username, full name, and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if UserProfile.objects.filter(phone=phone).exists():
-        return Response({'error': 'An account with this phone number already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+    if User.objects.filter(username__iexact=username).exists():
+        return Response({'error': 'This username is already taken. Please choose another username.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    username = phone.replace('+', '').replace(' ', '')
-    if User.objects.filter(username=username).exists():
-        username = f"{username}_{uuid.uuid4().hex[:4]}"
+    if not phone:
+        phone = f"+91{uuid.uuid4().int % 10000000000:010d}"
+    elif UserProfile.objects.filter(phone=phone).exists():
+        return Response({'error': 'An account with this mobile number already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
     user = User.objects.create_user(
         username=username,

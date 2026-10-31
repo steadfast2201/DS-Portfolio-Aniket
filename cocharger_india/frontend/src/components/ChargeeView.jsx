@@ -182,36 +182,41 @@ export default function ChargeeView({
     }
   }
 
-  const filterPills = [
-    { id: 'ALL', label: 'All Chargers' },
-    { id: 'SOCIETY', label: 'RWA Gated Societies' },
-    { id: 'HOME', label: 'Independent Villas' },
-    { id: 'KIRANA', label: 'Kirana & Shops' },
-    { id: '15A', label: '15A Socket (2W/4W)' },
-    { id: 'TYPE2', label: 'Type 2 Fast AC' },
+  const filterOptions = [
+    { id: 'ALL', label: 'All Chargers (Show All Categories)' },
+    { id: 'SOCIETY', label: 'RWA Gated Societies (Apartment Bays)' },
+    { id: 'HOME', label: 'Independent Villas & Bungalows' },
+    { id: 'KIRANA', label: 'Kirana & Commercial Shops' },
+    { id: '15A', label: 'Standard 15A/16A Socket (2W / 3W / 4W)' },
+    { id: 'TYPE2', label: 'Type 2 Fast AC Wallbox (7.2kW - 22kW)' },
   ]
 
   return (
     <div className="space-y-5">
-      {/* Category Filter Pills */}
-      <div className="flex items-center justify-between flex-wrap gap-3 pb-3 border-b-2 border-[#111111]">
-        <div className="flex items-center gap-2 overflow-x-auto py-1">
-          {filterPills.map((pill) => (
-            <button
-              key={pill.id}
-              onClick={() => setActivePill(pill.id)}
-              className={`px-4 py-2 rounded-full text-xs font-bold border-2 border-[#111111] transition whitespace-nowrap ${
-                activePill === pill.id
-                  ? 'bg-[#111111] text-[#F5F4F0]'
-                  : 'bg-[#F5F4F0] text-[#111111]'
-              }`}
-            >
-              {pill.label}
-            </button>
-          ))}
+      {/* Category Filter Dropdown */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-[#111111]">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <label
+            htmlFor="charger-category-select"
+            className="text-xs font-extrabold uppercase tracking-wider shrink-0"
+          >
+            Charger Category:
+          </label>
+          <select
+            id="charger-category-select"
+            value={activePill}
+            onChange={(e) => setActivePill(e.target.value)}
+            className="w-full sm:w-80 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F4F0] text-[#111111] border-2 border-[#111111] outline-none cursor-pointer"
+          >
+            {filterOptions.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
         <span className="text-xs font-extrabold text-[#111111]">
-          {chargers.length} Neighbour Chargers Available
+          {chargers.length} Neighbour Charger(s) Available
         </span>
       </div>
 

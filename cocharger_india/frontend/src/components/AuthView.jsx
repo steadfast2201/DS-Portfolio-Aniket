@@ -4,17 +4,19 @@ import { loginUser, registerUser } from '../api'
 /**
  * AuthView.jsx — Sign In & Sign Up Screen
  * Strictly Two-Color Palette: Pale White (#F5F4F0) & Black (#111111)
+ * Sign In uses Username + Password (created at Sign Up).
  */
 export default function AuthView({ profiles, onLoginSuccess }) {
   const [tab, setTab] = useState('login') // 'login' | 'register'
   const [error, setError] = useState('')
 
-  // Sign In form state
-  const [identifier, setIdentifier] = useState('')
+  // Sign In form state (Username + Password)
+  const [username, setUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('demo123')
 
-  // Sign Up form state
+  // Sign Up form state (includes custom Username creation)
   const [regForm, setRegForm] = useState({
+    username: '',
     full_name: '',
     phone: '+91',
     password: '',
@@ -32,7 +34,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
   async function handleLoginSubmit(e) {
     e.preventDefault()
     setError('')
-    const { ok, data } = await loginUser(identifier, loginPassword)
+    const { ok, data } = await loginUser(username, loginPassword)
     if (ok) {
       onLoginSuccess(data)
     } else {
@@ -40,9 +42,9 @@ export default function AuthView({ profiles, onLoginSuccess }) {
     }
   }
 
-  async function handleQuickDemoLogin(phone) {
+  async function handleQuickDemoLogin(demoUsername) {
     setError('')
-    const { ok, data } = await loginUser(phone, 'demo123')
+    const { ok, data } = await loginUser(demoUsername, 'demo123')
     if (ok) {
       onLoginSuccess(data)
     } else {
@@ -111,7 +113,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-5 sm:p-6 space-y-5">
           {error && (
             <div className="p-3 rounded-xl bg-[#111111] text-[#F5F4F0] text-xs font-bold">
               {error}
@@ -123,21 +125,21 @@ export default function AuthView({ profiles, onLoginSuccess }) {
               <div>
                 <h2 className="text-lg font-extrabold">Welcome back to ChargePe24</h2>
                 <p className="text-xs font-medium mt-0.5">
-                  Sign in with your registered Indian mobile number or username.
+                  Sign in with your ChargePe24 username and password.
                 </p>
               </div>
 
               <form onSubmit={handleLoginSubmit} className="space-y-3.5 text-xs">
                 <div>
                   <label className="block font-bold mb-1">
-                    Mobile Number or Username
+                    Username
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g., +919822011223 or rohan_host"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="e.g., rohan_host or aniket24"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3.5 py-2.5 text-[#111111] font-medium outline-none"
                   />
                 </div>
@@ -171,7 +173,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                     <button
                       key={p.id}
                       type="button"
-                      onClick={() => handleQuickDemoLogin(p.phone)}
+                      onClick={() => handleQuickDemoLogin(p.user?.username)}
                       className="w-full p-3 rounded-xl border-2 border-[#111111] bg-[#F5F4F0] hover:bg-[#111111] hover:text-[#F5F4F0] transition flex items-center justify-between text-left text-xs"
                     >
                       <div>
@@ -179,7 +181,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                           {p.user.first_name || p.user.username}
                         </div>
                         <div className="text-[11px] font-mono">
-                          {p.phone} • {p.society_name}
+                          @{p.user.username} • {p.society_name}
                         </div>
                       </div>
                       <span className="px-2.5 py-1 rounded-full border border-current font-bold text-[10px] uppercase">
@@ -195,11 +197,40 @@ export default function AuthView({ profiles, onLoginSuccess }) {
               <div>
                 <h2 className="text-lg font-extrabold">Join ChargePe24</h2>
                 <p className="text-xs font-medium mt-0.5">
-                  Create an account to book neighbour chargers or monetize your own parking bay.
+                  Create your unique username and password to book neighbour chargers or host your own bay.
                 </p>
               </div>
 
               <form onSubmit={handleRegisterSubmit} className="space-y-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold mb-1">Create Username</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g., aniket_ev"
+                      value={regForm.username}
+                      onChange={(e) =>
+                        setRegForm({ ...regForm, username: e.target.value })
+                      }
+                      className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2 font-mono font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1">Create Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Create password"
+                      value={regForm.password}
+                      onChange={(e) =>
+                        setRegForm({ ...regForm, password: e.target.value })
+                      }
+                      className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2"
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold mb-1">Full Name</label>
@@ -231,19 +262,6 @@ export default function AuthView({ profiles, onLoginSuccess }) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold mb-1">Password</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Create password"
-                      value={regForm.password}
-                      onChange={(e) =>
-                        setRegForm({ ...regForm, password: e.target.value })
-                      }
-                      className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2"
-                    />
-                  </div>
-                  <div>
                     <label className="block font-bold mb-1">Account Role</label>
                     <select
                       value={regForm.role}
@@ -257,9 +275,6 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                       <option value="HOST">Charger Host (Owner Only)</option>
                     </select>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold mb-1">Society / Layout Name</label>
                     <input
@@ -273,6 +288,9 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                       className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold mb-1">Flat / House No.</label>
                     <input
@@ -286,21 +304,20 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                       className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold mb-1">
-                    UPI ID (For 90% Host Earnings Settlement)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., aniket@okaxis"
-                    value={regForm.upi_id}
-                    onChange={(e) =>
-                      setRegForm({ ...regForm, upi_id: e.target.value })
-                    }
-                    className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2 font-mono"
-                  />
+                  <div>
+                    <label className="block font-bold mb-1">
+                      UPI ID (For 90% Host Payouts)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., aniket@okaxis"
+                      value={regForm.upi_id}
+                      onChange={(e) =>
+                        setRegForm({ ...regForm, upi_id: e.target.value })
+                      }
+                      className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-3 py-2 font-mono"
+                    />
+                  </div>
                 </div>
 
                 {/* Optional EV Registration Block */}
@@ -308,7 +325,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                   <div className="font-extrabold uppercase text-[10px] tracking-wider">
                     Optional: Add Your EV (For Drivers)
                   </div>
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                       <label className="block font-bold mb-1">EV Number Plate</label>
                       <input
@@ -356,4 +373,3 @@ export default function AuthView({ profiles, onLoginSuccess }) {
     </div>
   )
 }
-

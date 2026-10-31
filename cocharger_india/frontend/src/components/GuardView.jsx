@@ -58,18 +58,18 @@ export default function GuardView({ bookings, initialPin, onRefreshData }) {
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             maxLength={6}
             value={pin}
             onChange={(e) => setPin(e.target.value)}
             placeholder="Enter 6-digit PIN (e.g. 482910)"
-            className="flex-1 bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-4 py-3 text-lg tracking-widest font-mono text-[#111111] outline-none"
+            className="flex-1 bg-[#F5F4F0] border-2 border-[#111111] rounded-xl px-4 py-3 text-base sm:text-lg tracking-widest font-mono text-[#111111] outline-none"
           />
           <button
             onClick={() => handleVerify(pin, false)}
-            className="px-6 py-3 rounded-xl bg-[#111111] text-[#F5F4F0] text-sm font-bold transition"
+            className="px-6 py-3 rounded-xl bg-[#111111] text-[#F5F4F0] text-sm font-bold transition whitespace-nowrap"
           >
             Verify Gate Pass
           </button>

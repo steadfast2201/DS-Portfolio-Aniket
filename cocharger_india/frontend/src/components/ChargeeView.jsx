@@ -299,17 +299,17 @@ export default function ChargeeView({
         </div>
 
         {/* Right 6 Columns: Sticky Map */}
-        <div className="lg:col-span-6 lg:sticky lg:top-20">
+        <div className="lg:col-span-6 lg:sticky lg:top-20 order-first lg:order-last">
           <div className="bg-[#F5F4F0] border-2 border-[#111111] rounded-2xl overflow-hidden">
-            <div ref={mapContainerRef} className="w-full h-[560px] z-10" />
+            <div ref={mapContainerRef} className="w-full h-[320px] sm:h-[480px] lg:h-[560px] z-10" />
           </div>
         </div>
       </div>
 
       {/* Booking Modal */}
       {bookingModalOpen && selectedCharger && (
-        <div className="fixed inset-0 bg-[#111111]/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#F5F4F0] text-[#111111] border-2 border-[#111111] rounded-2xl max-w-md w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-[#111111]/80 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-[#F5F4F0] text-[#111111] border-2 border-[#111111] rounded-2xl max-w-md w-full p-4 sm:p-6 space-y-4 my-auto">
             <div className="flex items-start justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-[#111111]">
@@ -324,7 +324,7 @@ export default function ChargeeView({
               </div>
               <button
                 onClick={() => setBookingModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#111111] text-[#F5F4F0] font-bold text-sm"
+                className="w-8 h-8 rounded-full bg-[#111111] text-[#F5F4F0] font-bold text-sm shrink-0"
               >
                 X
               </button>
@@ -367,7 +367,7 @@ export default function ChargeeView({
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block font-bold mb-1">Arrive At</label>
                   <input
@@ -390,7 +390,7 @@ export default function ChargeeView({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block font-bold mb-1">Routine Type</label>
                   <select

@@ -110,15 +110,15 @@ export default function PassesView({
             </div>
 
             {/* Ticket Footer Controls */}
-            <div className="px-5 py-3 bg-[#F5F4F0] border-t-2 border-[#111111] flex items-center justify-between text-xs">
+            <div className="px-4 sm:px-5 py-3 bg-[#F5F4F0] border-t-2 border-[#111111] flex flex-wrap items-center justify-between gap-2 text-xs">
               <button
                 onClick={() => onJumpToGuardPass(b.gate_pass_code)}
                 className="font-extrabold text-[#111111] underline"
               >
-                Verify at Guard Desk →
+                Verify at Guard Desk -&gt;
               </button>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {b.status === 'CONFIRMED' && (
                   <button
                     onClick={() => handleStart(b.id)}

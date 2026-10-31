@@ -200,7 +200,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
               </div>
 
               <form onSubmit={handleRegisterSubmit} className="space-y-3 text-xs">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold mb-1">Full Name</label>
                     <input
@@ -229,7 +229,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold mb-1">Password</label>
                     <input
@@ -259,7 +259,7 @@ export default function AuthView({ profiles, onLoginSuccess }) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold mb-1">Society / Layout Name</label>
                     <input

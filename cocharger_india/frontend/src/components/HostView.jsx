@@ -107,18 +107,18 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-[#111111]">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 text-[#111111]">
       {/* Left Column: Host Onboarding Form */}
-      <div className="bg-[#F5F4F0] border-2 border-[#111111] rounded-2xl p-5">
+      <div className="bg-[#F5F4F0] border-2 border-[#111111] rounded-2xl p-4 sm:p-5">
         <h2 className="font-extrabold text-base mb-1">
           List Your Parking Bay Charger (Host Mode)
         </h2>
         <p className="text-xs font-medium mb-4">
-          Click anywhere on the Google Map on the right to auto-fill Latitude & Longitude.
+          Tap or click anywhere on the Google Map to auto-fill Latitude & Longitude.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold mb-1">Host Owner</label>
               <select
@@ -128,7 +128,7 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
               >
                 {hostProfiles.map((hp) => (
                   <option key={hp.id} value={hp.id}>
-                    {hp.user.first_name || hp.user.username} ({hp.upi_id})
+                    {hp.user.first_name || hp.user.username}{hp.upi_id ? ` (${hp.upi_id})` : ''}
                   </option>
                 ))}
               </select>
@@ -159,7 +159,7 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold mb-1">Society / Area Name</label>
               <input
@@ -184,7 +184,7 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block font-bold mb-1">Hardware Tier</label>
               <select
@@ -223,58 +223,58 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-bold mb-1">Max Power (kW)</label>
+              <label className="block font-bold mb-1">Power (kW)</label>
               <input
                 type="number"
                 step="0.1"
                 value={form.max_power_kw}
                 onChange={(e) => setForm({ ...form, max_power_kw: e.target.value })}
-                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2"
+                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-2.5 sm:px-3 py-2"
               />
             </div>
             <div>
-              <label className="block font-bold mb-1">Rate per kWh (₹)</label>
+              <label className="block font-bold mb-1">Rate/kWh (₹)</label>
               <input
                 type="number"
                 step="0.5"
                 value={form.rate_per_kwh}
                 onChange={(e) => setForm({ ...form, rate_per_kwh: e.target.value })}
-                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2"
+                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-2.5 sm:px-3 py-2"
               />
             </div>
             <div>
-              <label className="block font-bold mb-1">Slot Fee / Hr (₹)</label>
+              <label className="block font-bold mb-1">Slot/Hr (₹)</label>
               <input
                 type="number"
                 step="1"
                 value={form.rate_per_hour}
                 onChange={(e) => setForm({ ...form, rate_per_hour: e.target.value })}
-                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2"
+                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-2.5 sm:px-3 py-2"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block font-bold mb-1">Latitude (Click Map →)</label>
+              <label className="block font-bold mb-1">Latitude (Tap Map)</label>
               <input
                 type="number"
                 step="0.000001"
                 value={form.latitude}
                 onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2 font-mono font-bold"
+                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-2.5 sm:px-3 py-2 font-mono font-bold"
               />
             </div>
             <div>
-              <label className="block font-bold mb-1">Longitude (Click Map →)</label>
+              <label className="block font-bold mb-1">Longitude (Tap Map)</label>
               <input
                 type="number"
                 step="0.000001"
                 value={form.longitude}
                 onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2 font-mono font-bold"
+                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-2.5 sm:px-3 py-2 font-mono font-bold"
               />
             </div>
           </div>

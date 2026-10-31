@@ -77,7 +77,7 @@ export default function App() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F5F4F0] text-[#111111]">
+    <div className="min-h-screen bg-[#F5F4F0] text-[#111111] overflow-x-hidden">
       <Navbar
         activeMode={activeMode}
         setActiveMode={setActiveMode}
@@ -86,7 +86,7 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
         {activeMode === 'explore' && (
           <ChargeeView
             currentUser={currentUser}

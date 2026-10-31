@@ -43,6 +43,12 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
   }, [])
 
   useEffect(() => {
+    if (currentUser?.id) {
+      setForm((prev) => ({ ...prev, host: currentUser.id }))
+    }
+  }, [currentUser])
+
+  useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return
 
     const map = L.map(mapContainerRef.current, { attributionControl: false }).setView([form.latitude, form.longitude], 13)
@@ -121,17 +127,10 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold mb-1">Host Owner</label>
-              <select
-                value={form.host}
-                onChange={(e) => setForm({ ...form, host: e.target.value })}
-                className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2"
-              >
-                {hostProfiles.map((hp) => (
-                  <option key={hp.id} value={hp.id}>
-                    {hp.user.first_name || hp.user.username}{hp.upi_id ? ` (${hp.upi_id})` : ''}
-                  </option>
-                ))}
-              </select>
+              <div className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2 font-extrabold truncate">
+                {currentUser?.user?.first_name || currentUser?.user?.username}
+                {currentUser?.upi_id ? ` (${currentUser.upi_id})` : ''}
+              </div>
             </div>
             <div>
               <label className="block font-bold mb-1">Market Segment</label>

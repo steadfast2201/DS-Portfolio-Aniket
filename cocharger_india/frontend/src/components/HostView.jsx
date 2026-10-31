@@ -139,9 +139,14 @@ export default function HostView({ currentUser, profiles, onRefreshData }) {
                 onChange={(e) => setForm({ ...form, segment_type: e.target.value })}
                 className="w-full bg-[#F5F4F0] border-2 border-[#111111] rounded-lg px-3 py-2"
               >
-                <option value="INTRA_SOCIETY">1. Intra-Society P2P (Gated RWA)</option>
-                <option value="INDEPENDENT_HOME">2. Independent Home / Bungalow</option>
-                <option value="KIRANA_COMMERCIAL">3. Kirana Store / Commercial</option>
+                <option value="INTRA_SOCIETY">1. Intra-Society P2P (Gated RWA / Apartment)</option>
+                <option value="INDEPENDENT_HOME">2. Independent Home / Bungalow Driveway</option>
+                <option value="KIRANA_COMMERCIAL">3. Kirana Store / Micro-Commercial Shop</option>
+                <option value="OFFICE_TECH_PARK">4. Office / IT Tech Park Workplace Bay</option>
+                <option value="HOTEL_HOMESTAY">5. Hotel / Resort / Homestay Parking</option>
+                <option value="RESTAURANT_DHABA">6. Highway Dhaba / Restaurant / Cafe</option>
+                <option value="MALL_RETAIL">7. Shopping Mall / Supermarket / Cinema</option>
+                <option value="HOSPITAL_INSTITUTION">8. Hospital / College / Public Institution</option>
               </select>
             </div>
           </div>

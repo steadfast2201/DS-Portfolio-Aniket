@@ -91,9 +91,15 @@ export default function ChargeeView({
     const filters = {}
     if (activePill === '15A') filters.connector = '15A_SOCKET'
     if (activePill === 'TYPE2') filters.connector = 'TYPE_2'
+    if (activePill === 'BHARAT_AC001') filters.connector = 'BHARAT_AC001'
     if (activePill === 'SOCIETY') filters.segment = 'INTRA_SOCIETY'
     if (activePill === 'HOME') filters.segment = 'INDEPENDENT_HOME'
     if (activePill === 'KIRANA') filters.segment = 'KIRANA_COMMERCIAL'
+    if (activePill === 'OFFICE') filters.segment = 'OFFICE_TECH_PARK'
+    if (activePill === 'HOTEL') filters.segment = 'HOTEL_HOMESTAY'
+    if (activePill === 'DHABA') filters.segment = 'RESTAURANT_DHABA'
+    if (activePill === 'MALL') filters.segment = 'MALL_RETAIL'
+    if (activePill === 'HOSPITAL') filters.segment = 'HOSPITAL_INSTITUTION'
 
     fetchChargers(filters).then((data) => {
       setChargers(data)
@@ -184,11 +190,17 @@ export default function ChargeeView({
 
   const filterOptions = [
     { id: 'ALL', label: 'All Chargers (Show All Categories)' },
-    { id: 'SOCIETY', label: 'RWA Gated Societies (Apartment Bays)' },
-    { id: 'HOME', label: 'Independent Villas & Bungalows' },
-    { id: 'KIRANA', label: 'Kirana & Commercial Shops' },
-    { id: '15A', label: 'Standard 15A/16A Socket (2W / 3W / 4W)' },
-    { id: 'TYPE2', label: 'Type 2 Fast AC Wallbox (7.2kW - 22kW)' },
+    { id: 'SOCIETY', label: '1. Intra-Society P2P (Gated RWA / Apartment)' },
+    { id: 'HOME', label: '2. Independent Home / Bungalow Driveway' },
+    { id: 'KIRANA', label: '3. Kirana Store / Micro-Commercial Shop' },
+    { id: 'OFFICE', label: '4. Office / IT Tech Park Workplace Bay' },
+    { id: 'HOTEL', label: '5. Hotel / Resort / Homestay Parking' },
+    { id: 'DHABA', label: '6. Highway Dhaba / Restaurant / Cafe' },
+    { id: 'MALL', label: '7. Shopping Mall / Supermarket / Cinema' },
+    { id: 'HOSPITAL', label: '8. Hospital / College / Public Institution' },
+    { id: '15A', label: 'Connector: Standard 15A/16A 3-Pin Socket' },
+    { id: 'TYPE2', label: 'Connector: Type 2 Fast AC Wallbox (7.2kW - 22kW)' },
+    { id: 'BHARAT_AC001', label: 'Connector: Bharat AC-001 (3.3kW)' },
   ]
 
   return (

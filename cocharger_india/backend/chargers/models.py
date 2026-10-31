@@ -6,7 +6,12 @@ class Charger(models.Model):
     SEGMENT_CHOICES = [
         ('INTRA_SOCIETY', '1. Intra-Society P2P (Gated RWA / Apartment)'),
         ('INDEPENDENT_HOME', '2. Independent Home / Bungalow Driveway'),
-        ('KIRANA_COMMERCIAL', '3. Kirana Store / Micro-Commercial Hub'),
+        ('KIRANA_COMMERCIAL', '3. Kirana Store / Micro-Commercial Shop'),
+        ('OFFICE_TECH_PARK', '4. Office / IT Tech Park Workplace Bay'),
+        ('HOTEL_HOMESTAY', '5. Hotel / Resort / Homestay Parking'),
+        ('RESTAURANT_DHABA', '6. Highway Dhaba / Restaurant / Cafe'),
+        ('MALL_RETAIL', '7. Shopping Mall / Supermarket / Cinema'),
+        ('HOSPITAL_INSTITUTION', '8. Hospital / College / Public Institution'),
     ]
 
     HARDWARE_TIER_CHOICES = [

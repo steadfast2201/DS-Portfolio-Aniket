@@ -1,0 +1,32 @@
+# Local environments & secrets
+/venv
+.venv/
+.env
+*.env
+
+# Large datasets & notes
+/data
+datasets/
+pcb_dataset/
+
+# Model weights & compiled engines (track metadata/benchmarks, not huge binaries)
+weights/
+runs/
+*.pt
+*.pth
+*.onnx
+*.engine
+*.trt
+*.gguf
+*.bin
+
+# Python / Jupyter / C++ build artifacts
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+build/
+cpp_runner/build/
+*.exe
+*.dll
+*.so
+
